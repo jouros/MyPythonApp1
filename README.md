@@ -8,7 +8,6 @@ For Ansible I'm using account 'management' with sudo rights, Runner regular user
 ## Self Hosted Runner deployment
 
 ```text
-$ 
 $ prepare-cloudimage-disk.sh -n jammy-server-cloudimg-amd64 -N 6
 Image resized.
 image: jammy-server-cloudimg-amd64-50G-6.qcow2
