@@ -1,6 +1,6 @@
 # MyPythonApp1
 
-Github Actions Workflow CI pipeline lab. I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is rootless, so there is just one access restricted regular user account with Docker and Runner. 
+Github Actions Workflow CI pipeline lab. I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is Rootless, so there is just one access restricted regular user account for Docker and Runner. 
 
 For Ansible I'm using account 'management' with sudo rights, Runner regular user is 'agentuser'. Ssh Pub key is only allowd for management user. 
 
@@ -68,3 +68,70 @@ Server:
  Server Version: 25.0.3
 ```
 
+### Deploy Runner
+
+```text
+$ mkdir actions-runner && cd actions-runner
+$
+$ curl -o actions-runner-linux-x64-2.314.1.tar.gz -L https://github.com/actions/runner/releases/download/v2.314.1/actions-runner-linux-x64-2.314.1.tar.gz
+$
+$ echo "6c726a118bbe02cd32e222f890e1e476567bf299353a96886ba75b423c1137b5  actions-runner-linux-x64-2.314.1.tar.gz" | shasum -a 256 -c
+actions-runner-linux-x64-2.314.1.tar.gz: OK
+$
+$ tar xzf ./actions-runner-linux-x64-2.314.1.tar.gz
+$
+$ ./config.sh --url https://github.com/jouros/MyPythonApp1 --token AR73IKE...
+
+--------------------------------------------------------------------------------
+|        ____ _ _   _   _       _          _        _   _                      |
+|       / ___(_) |_| | | |_   _| |__      / \   ___| |_(_) ___  _ __  ___      |
+|      | |  _| | __| |_| | | | | '_ \    / _ \ / __| __| |/ _ \| '_ \/ __|     |
+|      | |_| | | |_|  _  | |_| | |_) |  / ___ \ (__| |_| | (_) | | | \__ \     |
+|       \____|_|\__|_| |_|\__,_|_.__/  /_/   \_\___|\__|_|\___/|_| |_|___/     |
+|                                                                              |
+|                       Self-hosted runner registration                        |
+|                                                                              |
+--------------------------------------------------------------------------------
+
+# Authentication
+
+
+√ Connected to GitHub
+
+# Runner Registration
+
+Enter the name of the runner group to add this runner to: [press Enter for Default]
+
+Enter the name of runner: [press Enter for selfhostedrunner]
+
+This runner will have the following labels: 'self-hosted', 'Linux', 'X64'
+Enter any additional labels (ex. label-1,label-2): [press Enter to skip]
+
+√ Runner successfully added
+√ Runner connection is good
+
+# Runner settings
+
+Enter name of work folder: [press Enter for _work]
+
+√ Settings Saved.
+```
+
+Runner is running in foreground:
+```text
+$ ./run.sh
+
+√ Connected to GitHub
+
+Current runner version: '2.314.1'
+2024-02-29 11:19:02Z: Listening for Jobs
+2024-02-29 12:57:43Z: Running job: build
+2024-02-29 12:58:03Z: Job build completed with result: Succeeded
+2024-02-29 13:05:52Z: Running job: build
+2024-02-29 13:06:04Z: Job build completed with result: Succeeded
+2024-02-29 13:11:45Z: Running job: build
+```
+
+### Runner workflow yaml
+
+123
