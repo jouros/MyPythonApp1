@@ -19,4 +19,4 @@ jobs:
 
     - name: "Vars"
       run: |
-        echo "F: $GITHUB_HEAD_REF"
+        echo "F: $GITHUB_REF"
