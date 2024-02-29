@@ -1,0 +1,75 @@
+---
+# tasks file for deploy-docker
+- name: Disable system-wide Docker daemon
+  become: yes
+  systemd:
+    name: docker
+    state: stopped
+    enabled: no
+
+- name: Get agentuser uid
+  become: yes
+  getent:
+    database: passwd
+    key: agentuser
+
+- debug:
+    msg: "UID: {{ getent_passwd.agentuser[1] }}"
+
+- name: Install Rootless Docker
+  become: yes
+  become_user: agentuser
+  shell: |
+    loginctl enable-linger agentuser
+    export  XDG_RUNTIME_DIR=/run/user/$UID
+    /usr/bin/dockerd-rootless-setuptool.sh install
+  args:
+    executable: /bin/bash
+  register: install_out
+
+- debug:
+    msg: "{{ install_out.stdout }}"
+
+- name: Check status 
+  become: yes
+  become_user: agentuser
+  shell: |
+    XDG_RUNTIME_DIR=/run/user/`id -u` systemctl --user status --no-pager
+  register: status_out
+
+- debug:
+    msg: "{{ status_out.stdout }}"
+
+- name: Set DOCKER_HOST env variable to bashrc
+  become: yes
+  become_user: agentuser
+  blockinfile:
+    path: /home/agentuser/.bashrc
+    block: |
+      {{ item.export }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+    insertafter: EOF
+    backup: no
+  loop:
+    - { name: docker, export: "export DOCKER_HOST=\"unix:///run/user/1001/docker.sock\"" }
+
+- name: Add agentuser to docker group
+  become: yes
+  user:
+    name: agentuser
+    groups: agentuser, docker
+    append: yes
+
+- name: Reload docker 
+  become: yes
+  become_user: agentuser
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes
+    scope: user
+  environment: 
+    DOCKER_HOST: "unix:///run/user/1001/docker.sock"
+    XDG_RUNTIME_DIR: "/run/user/1001" 
+  register: restart_out
+...

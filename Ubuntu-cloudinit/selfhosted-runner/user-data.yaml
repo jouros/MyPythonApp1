@@ -28,7 +28,6 @@ packages:
   - acl
   - acct
   - tree
-  - helm
   - net-tools
   - gnupg2
   - expect
@@ -39,13 +38,18 @@ packages:
   - curl
   - uidmap
   - aria2
+  - speedtest-cli
   - qemu-guest-agent
 apt:
   sources:
-    hashi.list:
+    docker.list:
       source: "deb [arch=amd64 signed-by=$KEY_FILE] https://download.docker.com/linux/ubuntu jammy stable"
       keyid: 8D81803C0EBFCD88 
       keyserver: "https://download.docker.com/linux/ubuntu/gpg"
+    helm.list:
+      source: "deb [arch=amd64 signed-by=$KEY_FILE] https://baltocdn.com/helm/stable/debian/ all main"
+      keyid: 294AC4827C1A168A
+      keyserver: "https://baltocdn.com/helm/signing.asc"
 keyboard:
   layout: fi
 timezone: Europe/Helsinki
@@ -63,9 +67,11 @@ write_files:
 runcmd:
   - systemctl start qemu-guest-agent # Agent can not be enabled
   - apt-get update
-  - apt install -y docker-ce docker-ce-cli containerd.io 
+  - apt install -y docker-ce docker-ce-cli containerd.io helm 
   - systemctl stop docker
   - systemctl disable docker
+  - systemctl stop docker.socket
+  - systemctl disable docker.socket
 final_message: |
   cloud-init has finished
   version: $version

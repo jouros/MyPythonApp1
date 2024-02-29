@@ -6,13 +6,24 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  PR_NUM: ${{ github.event.number }}
+  BR_NAME: ${{ github.event.pull_request.head.ref }}
+  UPDATED_AT: ${{ github.event.pull_request.updated_at }}
+
 jobs:
 
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted 
 
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag mypythonapp:$(date +%s)
+
+    - name: "Vars"
+      run: |
+        echo $PR_NUM
+        echo $BR_NAME
+        echo $UPDATED_AT

@@ -1,0 +1,11 @@
+---
+- name: Sefhosted Agent setup
+  hosts: runner 
+  gather_facts: no 
+  roles:
+    - { role: update-packages, tags: ['update-packages'] }
+    - { role: deploy-docker, tags: ['deploy-docker'] }
+    - { role: docker-trust, tags: ['docker-trust'] }
+    - { role: deploy-imagescan, tags: ['deploy-imagescan'] }
+    - { role: pipeline-config, tags: ['pipeline-config'] }
+...
