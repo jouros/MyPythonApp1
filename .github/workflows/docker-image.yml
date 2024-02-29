@@ -24,6 +24,6 @@ jobs:
 
     - name: "Vars"
       run: |
-        echo $PR_NUM
-        echo $BR_NAME
-        echo $UPDATED_AT
+        echo ${{ env.PR_NUM }}
+        echo ${{ env.BR_NAME }}
+        echo ${{ env.UPDATED_AT }}
