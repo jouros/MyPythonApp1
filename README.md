@@ -1,6 +1,6 @@
 # MyPythonApp1
 
-Github Actions Workflow CI pipeline lab. I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is rootless, so there is just one regular user account with Docker and Runner. 
+Github Actions Workflow CI pipeline lab. I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is rootless, so there is just one access restricted regular user account with Docker and Runner. 
 
 For Ansible I'm using account 'management' with sudo rights, Runner regular user is 'agentuser'. Ssh Pub key is only allowd for management user. 
 
@@ -36,3 +36,35 @@ NUM         = 6
 ################################################
 Starting...
 ```
+
+#### Rootless Dokcer
+
+From IaC host I run Rootless Docker deployment role and verify result in Selfhostedrunner host:
+```text
+$ IaC:
+$ ansible-playbook main.yml --tags "deploy-docker"
+$
+agentuser@selfhostedrunner:~$ id
+uid=1001(agentuser) gid=1002(agentuser) groups=1002(agentuser),100(users),999(docker)
+agentuser@selfhostedrunner:~$ docker info
+Client: Docker Engine - Community
+ Version:    25.0.3
+ Context:    default
+ Debug Mode: false
+ Plugins:
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.12.1
+    Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+  compose: Docker Compose (Docker Inc.)
+    Version:  v2.24.5
+    Path:     /usr/libexec/docker/cli-plugins/docker-compose
+
+Server:
+ Containers: 0
+  Running: 0
+  Paused: 0
+  Stopped: 0
+ Images: 0
+ Server Version: 25.0.3
+```
+
