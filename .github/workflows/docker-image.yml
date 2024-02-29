@@ -22,3 +22,4 @@ jobs:
         echo "GITHUB_REF: $GITHUB_REF"
         echo "GITHUB_SHA: $GITHUB_SHA"
         echo "GITHUB_WORKFLOW_SHA: $GITHUB_WORKFLOW_SHA"
+        echo "RUNNER_DEBUG: $RUNNER_DEBUG"
