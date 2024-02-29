@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  PR_NUM: ${{ github.event.number }}
-  BR_NAME: ${{ github.event.pull_request.head.ref }}
-  UPDATED_AT: ${{ github.event.pull_request.updated_at }}
-
 jobs:
 
   build:
@@ -24,6 +19,4 @@ jobs:
 
     - name: "Vars"
       run: |
-        echo "F: $PR_NUM"
-        echo "S: $BR_NAME"
-        echo "T: $UPDATED_AT"
+        echo "F: $GITHUB_HEAD_REF"
