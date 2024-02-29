@@ -134,4 +134,4 @@ Current runner version: '2.314.1'
 
 ### Runner workflow yaml
 
-123
+I prefer to have debug logs enabled when I develop pipeline yaml, so I set repository secret 'ACTIONS_STEP_DEBUG' with value 'true' in repository settings and verify that setting in yaml env variables printout `echo "RUNNER_DEBUG: $RUNNER_DEBUG"` which will have value '1' when debug is on. 
