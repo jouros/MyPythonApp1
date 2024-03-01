@@ -13,26 +13,26 @@ jobs:
     runs-on: self-hosted 
 
     steps:
-    - uses: actions/checkout@v4
-      name: Checkout
+      - uses: actions/checkout@v4
+        name: Checkout
 
-    - uses: docker/login-action@v3
-    - name: Dockerhub login
-      with: 
-        registry: hub.docker.com
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }} 
+      - uses: docker/login-action@v3
+        name: Dockerhub login
+        with: 
+          registry: hub.docker.com
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }} 
 
-    - name: Build the Docker image
-      run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA .
+      - name: Build the Docker image
+        run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA .
 
-    - name: Push Docker image to Dockerhub
-      run: docker push jrcjoro1/mypythonapp:$GITHUB_SHA
+      - name: Push Docker image to Dockerhub
+        run: docker push jrcjoro1/mypythonapp:$GITHUB_SHA
 
-    - name: Vars
-      run: |
-        echo "GITHUB_REF: $GITHUB_REF"
-        echo "GITHUB_SHA: $GITHUB_SHA"
-        echo "GITHUB_WORKFLOW_SHA: $GITHUB_WORKFLOW_SHA"
-        echo "RUNNER_NAME: $RUNNER_NAME"
-        echo "RUNNER_DEBUG: $RUNNER_DEBUG"
+      - name: Vars
+        run: |
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_WORKFLOW_SHA: $GITHUB_WORKFLOW_SHA"
+          echo "RUNNER_NAME: $RUNNER_NAME"
+          echo "RUNNER_DEBUG: $RUNNER_DEBUG"
