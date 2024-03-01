@@ -2,6 +2,8 @@
 - name: Sefhosted Agent setup
   hosts: runner 
   gather_facts: no 
+  vars: 
+    trivyVersion: "0.49.1"
   roles:
     - { role: update-packages, tags: ['update-packages'] }
     - { role: deploy-docker, tags: ['deploy-docker'] }

@@ -2,8 +2,6 @@
 # tasks file for deploy-imagescan
 # https://github.com/aquasecurity/trivy/releases/download/v$(trivyVersion)/trivy_$(trivyVersion)_Linux-64bit.deb
 - name: Download Trivy
-  vars:
-    trivyVersion: "0.44.0"
   get_url:
     url: "https://github.com/aquasecurity/trivy/releases/download/v{{ trivyVersion }}/trivy_{{ trivyVersion }}_Linux-64bit.deb"
     dest: "/home/management/trivy.dep"
