@@ -135,3 +135,20 @@ Current runner version: '2.314.1'
 ### Runner workflow yaml
 
 I prefer to have debug logs enabled when I develop pipeline yaml, so I set repository secret 'ACTIONS_STEP_DEBUG' with value 'true' in repository settings and verify that setting in yaml env variables printout `echo "RUNNER_DEBUG: $RUNNER_DEBUG"` which will have value '1' when debug is on. 
+
+
+### Trivy image security scanning tool
+
+```text
+$ ansible-playbook main.yml --tags "deploy-imagescan"
+TASK [deploy-imagescan : debug] ***************************************************************************************************************************************************************************************************
+Friday 01 March 2024  15:23:06 +0200 (0:00:01.517)       0:00:04.678 **********
+ok: [selfhostedrunner] =>
+  msg: |-
+    Selecting previously unselected package trivy.
+    (Reading database ... 101503 files and directories currently installed.)
+    Preparing to unpack /home/management/trivy.dep ...
+    Unpacking trivy (0.49.1) ...
+    Setting up trivy (0.49.1) ...
+```
+
