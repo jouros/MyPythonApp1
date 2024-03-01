@@ -28,15 +28,18 @@ jobs:
       - name: Build the Docker image
         run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA .
 
-      - uses: aquasecurity/trivy-action@master
-        name: Run Trivy vulnerability scanner
-        with:
-          image-ref: 'jrcjoro1/mypythonapp:${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+      - name: Trivy
+        run: trivy image --severity HIGH,CRITICAL --format table --exit-code 1  --ignore-unfixed true --vuln-type os,library jrcjoro1/mypythonapp:$GITHUB_SHA
+
+#      - uses: aquasecurity/trivy-action@master
+#        name: Run Trivy vulnerability scanner
+#        with:
+#          image-ref: 'jrcjoro1/mypythonapp:${{ github.sha }}'
+#          format: 'table'
+#          exit-code: '1'
+#          ignore-unfixed: true
+#          vuln-type: 'os,library'
+#          severity: 'CRITICAL,HIGH'
 
       - name: Push Docker image to Dockerhub
         run: docker push jrcjoro1/mypythonapp:$GITHUB_SHA
