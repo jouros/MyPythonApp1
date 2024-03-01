@@ -28,7 +28,7 @@ jobs:
     - name: Push Docker image to Dockerhub
       run: docker push jrcjoro1/mypythonapp:$GITHUB_SHA
 
-    - name: "Vars"
+    - name: Vars
       run: |
         echo "GITHUB_REF: $GITHUB_REF"
         echo "GITHUB_SHA: $GITHUB_SHA"
