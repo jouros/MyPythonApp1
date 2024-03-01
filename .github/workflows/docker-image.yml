@@ -28,7 +28,7 @@ jobs:
       - uses: aquasecurity/trivy-action@master
         name: Run Trivy vulnerability scanner
         with:
-          image-ref: 'jrcjoro1/mypythonapp:${{ GITHUB_SHA }}'
+          image-ref: 'jrcjoro1/mypythonapp:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
