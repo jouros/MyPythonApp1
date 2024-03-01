@@ -23,7 +23,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }} 
 
     - name: Build the Docker image
-      run: docker build -f Dockerfile -t jrcjoro1/mypythonapp:$GITHUB_SHA . 2> >(while read line; do (>&2 echo "STDERROR: $line"); done)
+      run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA . 2> >(while read line; do (>&2 echo "STDERROR: $line"); done)
 
     - name: Push Docker image to Dockerhub
       run: docker push jrcjoro1/mypythonapp:$GITHUB_SHA
