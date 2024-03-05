@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
 
       - name: Build the Docker image
-        run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA . 2> >(while read line; do (>&2 echo "STDERROR: $line"); done)
+        run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA .
 
       - name: Trivy
         run: trivy image --severity HIGH,CRITICAL --format table --exit-code 0 --ignore-unfixed --vuln-type os,library jrcjoro1/mypythonapp:$GITHUB_SHA
