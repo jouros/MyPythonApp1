@@ -167,7 +167,7 @@ Successfully generated and loaded private key. Corresponding public key availabl
 $
 ```
 
-Above command will add private key aitomatically to trust store:
+Above command will add private key automatically to trust store:
 ```text
 $ tree .docker/
 
