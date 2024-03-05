@@ -8,6 +8,8 @@ on:
 
 env:
   DOCKER_HOST: 'unix:///run/user/1001/docker.sock'
+  DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
+  DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }}
 
 jobs:
 
@@ -45,3 +47,4 @@ jobs:
           echo "RUNNER_NAME: $RUNNER_NAME"
           echo "RUNNER_DEBUG: $RUNNER_DEBUG"
           echo "RUNNER_TEMP: $RUNNER_TEMP"
+          ls -laR "$RUNNER_TEMP"

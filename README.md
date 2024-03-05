@@ -152,3 +152,28 @@ ok: [selfhostedrunner] =>
     Setting up trivy (0.49.1) ...
 ```
 
+### Docker Content Trust
+
+
+First I'll create delegation key. Delegation is key who control can sign a image tag:
+```text
+$ docker trust key generate jorokey
+Generating key for jorokey...
+Enter passphrase for new jorokey key with ID 7608e6e:
+Passphrase is too short. Please use a password manager to generate and store a good random passphrase.
+Enter passphrase for new jorokey key with ID 7608e6e:
+Repeat passphrase for new jorokey key with ID 7608e6e:
+Successfully generated and loaded private key. Corresponding public key available: /home/agentuser/jorokey.pub
+$
+```
+
+Above command will add private key aitomatically to trust store:
+```text
+$ tree .docker/
+
+└── trust
+    └── private
+        └── 7608e6e556b0d54092ef541f6613ea894f0602a3b684bcc424997dda32fb7cbb.key
+```
+
+
