@@ -10,6 +10,7 @@ env:
   DOCKER_HOST: 'unix:///run/user/1001/docker.sock'
   DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
   DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }}
+  DOCKER_CONTENT_TRUST: '1'
 
 jobs:
 
@@ -30,6 +31,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
 
+      - name: Add delegation Pub key to a spesific image repository with Global Unique name (GUN) in Notary server
+        run: docker trust signer add --key ~/Content_trust/jorokey.pub joro jrcjoro1/mypythonapp 
+
       - name: Build the Docker image
         run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA .
 
@@ -39,6 +43,9 @@ jobs:
       - name: Push Docker image to Dockerhub
         run: docker push jrcjoro1/mypythonapp:$GITHUB_SHA
 
+      - name: Inspect
+        run: docker trust inspect --pretty jrcjoro1/mypythonapp:$GITHUB_SHA
+
       - name: Vars
         run: |
           echo "GITHUB_REF: $GITHUB_REF"
@@ -47,4 +54,3 @@ jobs:
           echo "RUNNER_NAME: $RUNNER_NAME"
           echo "RUNNER_DEBUG: $RUNNER_DEBUG"
           echo "RUNNER_TEMP: $RUNNER_TEMP"
-          ls -laR "$RUNNER_TEMP"
