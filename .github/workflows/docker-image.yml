@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
 
       - name: Add delegation Pub key to a spesific image repository with Global Unique name (GUN) in Notary server
-        run: docker trust signer add --key ~/Content_trust/jorokey.pub joro jrcjoro1/mypythonapp 
+        run: docker trust signer add --key /home/agentuser/Content_trust/jorokey.pub joro jrcjoro1/mypythonapp 
 
       - name: Build the Docker image
         run: docker build -t jrcjoro1/mypythonapp:$GITHUB_SHA .
