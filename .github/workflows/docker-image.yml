@@ -38,6 +38,9 @@ jobs:
       - name: Load joroprivkey 
         run: docker trust key load --name joroprivkey ~/.docker/trust/private/7608e6e556b0d54092ef541f6613ea894f0602a3b684bcc424997dda32fb7cbb.key
 
+      - name: Load targets key
+        run: docker trust key load --name jorotargets ~/.docker/trust/private/25774b0493a6a039160503e1cc73975df0c96348ba089137f170c3f2ae7b1f6c.key 
+
       - name: Add delegation Pub key to a spesific image repository with Global Unique name (GUN) in Notary server
         run: docker trust signer add --key /home/agentuser/Content_trust/jorokey.pub joro jrcjoro1/mypythonapp 
 
