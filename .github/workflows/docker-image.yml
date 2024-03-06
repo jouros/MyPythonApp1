@@ -8,7 +8,7 @@ on:
 
 env:
   DOCKER_HOST: 'unix:///run/user/1001/docker.sock'
-  DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
+  DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }}
   DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }}
   DOCKER_CONTENT_TRUST: '1'
 
@@ -37,8 +37,6 @@ jobs:
 
       - name: Load joroprivkey 
         run: docker trust key load --name joroprivkey ~/.docker/trust/private/7608e6e556b0d54092ef541f6613ea894f0602a3b684bcc424997dda32fb7cbb.key
-        env:
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ env.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE }}
 
       - name: Add delegation Pub key to a spesific image repository with Global Unique name (GUN) in Notary server
         run: docker trust signer add --key /home/agentuser/Content_trust/jorokey.pub joro jrcjoro1/mypythonapp 
