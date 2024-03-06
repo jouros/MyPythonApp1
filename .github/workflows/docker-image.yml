@@ -19,6 +19,10 @@ jobs:
     runs-on: self-hosted 
 
     steps:
+      - name: Check is secrets are set
+        if: ${{ env.DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE == '' }}
+        run: echo "Secret is not set"
+
       - uses: actions/checkout@v4
         name: Checkout
 
