@@ -58,7 +58,9 @@ jobs:
         run: trivy image --severity HIGH,CRITICAL --format table --exit-code 0 --ignore-unfixed --vuln-type os,library ${{ secrets.DOCKERHUB_USERNAME }}/$APP:$GITHUB_SHA
 
       - name: Push Docker image to Dockerhub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/$APP:$GITHUB_SHA
+        run: docker trust sign docker.io/${{ secrets.DOCKERHUB_USERNAME }}/$APP:$GITHUB_SHA
+        env:
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER }}
 
       - name: Inspect
         run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
