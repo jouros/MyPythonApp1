@@ -391,6 +391,12 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3emk7zw/3/Io7U3uTFHc1QShztwx
 ```
 
 
+#### Backup all keys
+
+
+Problems will arise if you loose keys, so keep them safe!
+
+
 ### Cleanup
 
 
