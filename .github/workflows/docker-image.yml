@@ -41,16 +41,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }} 
 
-#      - name: Load newsigner with DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE set to NEWSIGNER pwd
-#        run: docker trust key load --name newsigner ~/.docker/trust/private/8eb496d6539a0371e2c817b6f3ace87e21b5df946cad465fe6cc2eefcf9f850c.key
-#        env:
-#          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER }}
+      - name: Inspect
+        run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
 
-      - name: Newsigner 
-        run: | 
-          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${{ secrets.TRUSTNEWSIGNER }}; docker trust key load --name newsigner ~/.docker/trust/private/8eb496d6539a0371e2c817b6f3ace87e21b5df946cad465fe6cc2eefcf9f850c.key
-          echo "newLine"
-          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${{ secrets.TRUSTREPOPWD }}; docker trust signer add --key ~/Content_trust/delegation.crt newsigner ${{ secrets.DOCKERHUB_USERNAME }}/$APP 
+      - name: Load newsigner with DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE set to NEWSIGNER pwd
+        run: docker trust key load --name newsigner ~/.docker/trust/private/8eb496d6539a0371e2c817b6f3ace87e21b5df946cad465fe6cc2eefcf9f850c.key
+        env:
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER }}
+
+      - name: Newsigner with TRUSTREPOPWD 
+        run:  docker trust signer add --key ~/Content_trust/delegation.crt newsigner ${{ secrets.DOCKERHUB_USERNAME }}/$APP 
+        env:
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
       
       - name: Build the Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$APP:$GITHUB_SHA .
