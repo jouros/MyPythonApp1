@@ -46,7 +46,7 @@ jobs:
         env:
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER }}
 
-      - name:  Add newsigner pub key with DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE set to what
+      - name:  Add newsigner pub key 
         run:  docker trust signer add --key ~/Content_trust/delegation.crt newsigner ${{ secrets.DOCKERHUB_USERNAME }}/$APP 
         env:
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}  
