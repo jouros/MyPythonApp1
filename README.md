@@ -372,6 +372,46 @@ Administrative keys for jrcjoro1/mypythonapp1
 ```
 
 
+#### DCT in CI Pipeline
+
+CI pipeline is based on github Actions which run in my selfhosted Runner host. I have set some keys and initialized repo jrcjoro/mypythonapp1 before CI pipeline, so in github Actions yaml I'll just load key, add signer, build and sign Container. Below is situation after first DCT run, where TAG 'd2c...' has been signed by 'newsigner':
+```text
+$ docker trust inspect --pretty jrcjoro1/mypythonapp1
+
+Signatures for jrcjoro1/mypythonapp1
+
+SIGNED TAG                                 DIGEST                                                             SIGNERS
+d2c284704a2e6010c70cdff71cc34a3433a1083a   9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5   newsigner
+
+List of signers and their keys for jrcjoro1/mypythonapp1
+
+SIGNER       KEYS
+jorosigner   1f3c4beb156f
+newsigner    8eb496d6539a
+
+Administrative keys for jrcjoro1/mypythonapp1
+
+  Repository Key:       93b133c3b226bf5294b166c0bfd2d1f0193dfff42678cadb906e8c0bcc6969f8
+  Root Key:     94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
+```
+
+
+#### Notary examples
+
+
+```text
+$ notary -s https://notary.docker.io -d ~/.docker/trust list docker.io/jrcjoro1/mypythonapp1
+NAME                                        DIGEST                                                              SIZE (BYTES)    ROLE
+----                                        ------                                                              ------------    ----
+d2c284704a2e6010c70cdff71cc34a3433a1083a    9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5    1990            targets/releases
+$
+$ notary -s https://notary.docker.io -d ~/.docker/trust list docker.io/jrcjoro1/mypythonapp1 --roles targets/newsigner
+NAME                                        DIGEST                                                              SIZE (BYTES)    ROLE
+----                                        ------                                                              ------------    ----
+d2c284704a2e6010c70cdff71cc34a3433a1083a    9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5    1990            targets/newsigner
+```
+
+
 #### Exporting root pub key
 
 
@@ -390,6 +430,7 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3emk7zw/3/Io7U3uTFHc1QShztwx
 -----END PUBLIC KEY-----
 ```
 
+#### How to verify that container is signed
 
 #### Backup all keys
 

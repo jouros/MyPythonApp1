@@ -10,7 +10,7 @@ env:
   DOCKER_HOST: 'unix:///run/user/1001/docker.sock'
   DOCKER_CONTENT_TRUST: '1'
   DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
-#  DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }}
+#  DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }} not needed beacuse repo is already manually initialized
   APP: 'mypythonapp1'
   DOCKERHUB: 'jrcjoro1'
 
