@@ -37,7 +37,7 @@ NUM         = 6
 Starting...
 ```
 
-#### Rootless Dokcer
+### Rootless Dokcer
 
 From IaC host I run Rootless Docker deployment role and verify result in Selfhostedrunner host:
 ```text
@@ -166,10 +166,11 @@ ok: [selfhostedrunner] =>
     Setting up trivy (0.49.1) ...
 ```
 
-### Docker Content Trust keys
+
+## CI Pipeline and Docker Content Trust
 
 
-#### docker trust key generate
+### docker trust key generate
 
 First I'll create delegation key. Delegation is key who control can sign a image tag:
 ```text
@@ -249,8 +250,7 @@ Administrative keys for jrcjoro1/mypythonapp1
 In Above 'mypythonapp' is first version which I use for comparison and 'mypythonapp1' is current version which was just created. 
 
 
-
-#### Creating delegation key manually
+### Creating delegation key manually
 
 
 Below I create my own CA, delegation.csr, sign csr with my own CA and create delegation.crt, add new delegation.key to docker trust private and use that new delegation.crt to add new 'newsigner' to repo jrcjoro1/mypythonapp1, which will have now two signers 'jorosigner' and 'newsigner':
@@ -372,7 +372,7 @@ Administrative keys for jrcjoro1/mypythonapp1
 ```
 
 
-#### DCT in CI Pipeline
+### DCT in CI Pipeline
 
 CI pipeline is based on github Actions which run in my selfhosted Runner host. I have set some keys and initialized repo jrcjoro/mypythonapp1 before CI pipeline, so in github Actions yaml I'll just load key, add signer, build and sign Container. Below is situation after first DCT run, where TAG 'd2c...' has been signed by 'newsigner':
 ```text
@@ -396,7 +396,7 @@ Administrative keys for jrcjoro1/mypythonapp1
 ```
 
 
-#### Notary examples
+### Notary examples
 
 
 ```text
@@ -412,14 +412,14 @@ d2c284704a2e6010c70cdff71cc34a3433a1083a    9171446e3dfba232cb70bbac39b69baa89cb
 ```
 
 
-#### Exporting root pub key
+### Exporting root pub key
 
 
 ```text
-$ cat .docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq
+$ cat ~/.docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq
 $ "keytype": "ecdsa-x509" => 94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
 $
-$ BASE64KEY=$(cat .docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq '.signed.keys."94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7".keyval.public' | sed -e 's/^"//' -e 's/"$//')
+$ BASE64KEY=$(cat ~/.docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq '.signed.keys."94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7".keyval.public' | sed -e 's/^"//' -e 's/"$//')
 $
 $ echo $BASE64KEY | base64 -d > rootpub.crt
 $
@@ -430,9 +430,19 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3emk7zw/3/Io7U3uTFHc1QShztwx
 -----END PUBLIC KEY-----
 ```
 
-#### How to verify that container is signed
+### How to verify that container is signed
 
-#### Backup all keys
+Signatures are stored in Notary server and Docker Hub supports all features of DCT. If you wan't to have private registry, you have to set up separate Notary service. In my Lab I use Docker Hub as a Notary service. 
+
+When DCT is enabled with DOCKER_CONTENT_TRUST env variable, docker verify in pull that signatures exist. Below I have enabled DCT and try to pull container that does not have signatures:
+```text
+$ export DOCKER_CONTENT_TRUST=1
+$
+$ docker pull jrcjoro1/my-python-app:0.0.1
+Error: remote trust data does not exist for docker.io/jrcjoro1/my-python-app: notary.docker.io does not have trust data for docker.io/jrcjoro1/my-python-app
+```
+
+### Backup all keys
 
 
 Problems will arise if you loose keys, so keep them safe!
@@ -443,4 +453,28 @@ Problems will arise if you loose keys, so keep them safe!
 
 In Lab environment idea is to play around and be able to start again at any point. With DCT this can be tricky once keys have been created, so easiest way is to initiate new DCT repository and create new keys for that. 
 
+
+## CD Pipeline and signature verification in Kubernetes
+
+
+### Connaisseur
+
+
+First lets add Connaisseur Helm repo to system (role is in WSL2Fun git repository which is my Kube deployment home), for Ansible I set `REPONAME: connaisseur` and `REPOURL: "https://sse-secure-systems.github.io/connaisseur/charts"` variables in main.yml: 
+```text
+$ ansible-playbook main.yml --tags "helm-addrepo"
+$
+$ Verification of above Ansible in K8s:
+$ helm repo list
+NAME            URL
+bitnami         https://charts.bitnami.com/bitnami
+custom-repo     https://jouros.github.io/helm-repo
+hashicorp       https://helm.releases.hashicorp.com
+connaisseur     https://sse-secure-systems.github.io/connaisseur/charts
+$
+$ helm search repo -l connaisseur
+NAME                    CHART VERSION   APP VERSION     DESCRIPTION
+connaisseur/connaisseur 2.3.4           3.3.4           Helm chart for Connaisseur - a Kubernetes admis...
+connaisseur/connaisseur 2.3.3           3.3.3           Helm chart for Connaisseur - a Kubernetes admis...
+```
 
