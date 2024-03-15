@@ -478,3 +478,69 @@ connaisseur/connaisseur 2.3.4           3.3.4           Helm chart for Connaisse
 connaisseur/connaisseur 2.3.3           3.3.3           Helm chart for Connaisseur - a Kubernetes admis...
 ```
 
+Next I'll deploy Connaisseur with Ansible (role in WSL2Fun repo) and check deployment from K8s:
+```text
+$ ansible-playbook main.yml --tags "helm-connaisseur"
+ok: [kube1] =>
+  msg: |-
+    Release "connaisseur" does not exist. Installing it now.
+    NAME: connaisseur
+    LAST DEPLOYED: Fri Mar 15 13:07:39 2024
+    NAMESPACE: connaisseur
+    STATUS: deployed
+    REVISION: 1
+    TEST SUITE: None
+$
+$ k get pods -n connaisseur
+NAME                                     READY   STATUS    RESTARTS   AGE
+connaisseur-deployment-fb6df5669-b8ngn   1/1     Running   0          9m41s
+connaisseur-deployment-fb6df5669-mbcfk   1/1     Running   0          9m41s
+connaisseur-deployment-fb6df5669-w5gzb   1/1     Running   0          9m41s
+```
+
+I created new Helm chart for mypythonapp1: 
+```text
+$ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "hashicorp" chart repository
+...Successfully got an update from the "custom-repo" chart repository
+...Successfully got an update from the "connaisseur" chart repository
+...Successfully got an update from the "bitnami" chart repository
+Update Complete. ⎈Happy Helming!⎈
+$
+$ helm search repo -l custom-repo
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+...
+custom-repo/mypythonapp1        0.0.1           0.0.1           A Helm chart for Kubernetes
+```
+
+Vault setup for mypythonapp1:
+$ K8s:
+$ kubectl get secret vault-auth-secret -n test2  --output 'go-template={{ .data.token }}' | base64 --decode > JWT.crt``text
+$ IaC host:
+$ scp -3 -p k8s-admin@192.168.122.10:~/Mypythonapp/JWT.crt management@192.168.122.14:~/JWT.crt
+$ Vault:
+$ vault write auth/kubernetes/config kubernetes_host="https://kube1:6443" token_reviewer_jwt="$JWT" kubernetes_ca_cert="$KUBE_CA_CERT" disable_local_ca_jwt="true" issuer="kubernetes/serviceaccount" disable_iss_validation="true"
+Success! Data written to: auth/kubernetes/config
+$
+$ vault read auth/kubernetes/config
+Key                       Value
+---                       -----
+disable_iss_validation    true
+disable_local_ca_jwt      true
+issuer                    kubernetes/serviceaccount
+```
+
+Next I'll pull new chart into K8s and do manual deployment test:
+```text
+$ helm pull custom-repo/mypythonapp1 --version 0.0.1 --untar
+$
+$ helm install mypythonapp1 ./mypythonapp1 --dry-run --namespace test2
+$
+
+```
+
+Next I'll create new Ansible role for `mypythonapp1` for automated IaC deployments: 
+```text
+sadasd
+```
