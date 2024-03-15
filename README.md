@@ -371,6 +371,12 @@ Administrative keys for jrcjoro1/mypythonapp1
 
 ```
 
+Unfortunately Connaisseur does not support rsa-x509 keys in Chart version 2.3.4 / App vversion 3.3.4, so Connaisseur config you have to use Docker default generated root pub key. They mentioned in github discussion board that support for rsa-x509 is under delelopment and will be added later on. Connaisseur error related to key format is:
+```text
+Error: INSTALLATION FAILED: 1 error occurred:
+        * admission webhook "connaisseur-svc.connaisseur.svc" denied the request: Trust data targets has an invalid format: 'rsa-x509' is not one of ['ecdsa']
+```
+
 
 ### DCT in CI Pipeline
 
