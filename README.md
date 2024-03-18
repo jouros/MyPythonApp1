@@ -546,8 +546,6 @@ $
 ```
 
 
-
-
 ### Notary examples
 
 
@@ -561,6 +559,17 @@ $ notary -s https://notary.docker.io -d ~/.docker/trust list docker.io/jrcjoro1/
 NAME                                        DIGEST                                                              SIZE (BYTES)    ROLE
 ----                                        ------                                                              ------------    ----
 d2c284704a2e6010c70cdff71cc34a3433a1083a    9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5    1990            targets/newsigner
+$
+$ notary -s https://notary.docker.io -d ~/.docker/trust delegation list docker.io/jrcjoro1/mypythonapp1
+
+ROLE                  PATHS             KEY IDS                                                             THRESHOLD
+----                  -----             -------                                                             ---------
+targets/jorosigner    "" <all paths>    1f3c4beb156fe65bb2fb1a9eb3ec280fce41015e70ee6eb3da082dd396163deb    1
+targets/newsigner     "" <all paths>    8eb496d6539a0371e2c817b6f3ace87e21b5df946cad465fe6cc2eefcf9f850c    1
+targets/newsigner2    "" <all paths>    950ec70deaca8bc2f0590fc19f88626fec7e0bfd77be63f3b2764b43f249fa94    1
+targets/releases      "" <all paths>    1f3c4beb156fe65bb2fb1a9eb3ec280fce41015e70ee6eb3da082dd396163deb    1
+                                        8eb496d6539a0371e2c817b6f3ace87e21b5df946cad465fe6cc2eefcf9f850c
+                                        950ec70deaca8bc2f0590fc19f88626fec7e0bfd77be63f3b2764b43f249fa94
 ```
 
 
