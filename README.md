@@ -570,6 +570,43 @@ targets/newsigner2    "" <all paths>    950ec70deaca8bc2f0590fc19f88626fec7e0bfd
 targets/releases      "" <all paths>    1f3c4beb156fe65bb2fb1a9eb3ec280fce41015e70ee6eb3da082dd396163deb    1
                                         8eb496d6539a0371e2c817b6f3ace87e21b5df946cad465fe6cc2eefcf9f850c
                                         950ec70deaca8bc2f0590fc19f88626fec7e0bfd77be63f3b2764b43f249fa94
+$
+$ Fix for error where delegation file is not sidned by any currently valid keys: 
+$
+$ docker trust inspect --pretty jrcjoro1/mypythonapp1
+WARN[0002] Error getting targets/releases: valid signatures did not meet threshold for targets/releases
+$
+$ notary -s https://notary.docker.io -d ~/.docker/trust witness docker.io/jrcjoro1/mypythonapp1 targets/releases --publish
+The following roles were successfully marked for witnessing on the next publish:
+        - targets/releases
+Auto-publishing changes to docker.io/jrcjoro1/mypythonapp1
+Enter username: jrcjoro1
+Enter password:
+WARN[0033] Error getting targets/releases: valid signatures did not meet threshold for targets/releases
+Enter passphrase for newsigner2 key with ID 950ec70:
+Successfully published changes for repository docker.io/jrcjoro1/mypythonapp1
+$
+$ docker trust inspect --pretty jrcjoro1/mypythonapp1
+
+Signatures for jrcjoro1/mypythonapp1
+
+SIGNED TAG                                 DIGEST                                                             SIGNERS
+59e4d39fb31b20be1ded800fe4e0a55492af47f6   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   (Repo Admin)
+71e65392cd63a9673da21fdefa618772fdff25ee   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   (Repo Admin)
+6954f2de0a2bc312b7e527cc7dd57afcad1e87ad   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   (Repo Admin)
+d2c284704a2e6010c70cdff71cc34a3433a1083a   9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5   (Repo Admin)
+f183e6894cae149b2670bdb32d14172affc8da1b   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   (Repo Admin)
+
+List of signers and their keys for jrcjoro1/mypythonapp1
+
+SIGNER       KEYS
+jorosigner   1f3c4beb156f
+newsigner2   950ec70deaca
+
+Administrative keys for jrcjoro1/mypythonapp1
+
+  Repository Key:       93b133c3b226bf5294b166c0bfd2d1f0193dfff42678cadb906e8c0bcc6969f8
+  Root Key:     94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
 ```
 
 
