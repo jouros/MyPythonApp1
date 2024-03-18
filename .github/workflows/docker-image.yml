@@ -44,8 +44,8 @@ jobs:
       - name: Inspect
         run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
 
-      - name: Load newsigner2 with DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE set to NEWSIGNER2 pwd
-        run: docker trust key load --name newsigner2 ~/.docker/trust/private/795f9ecaea5e8425e8e1d011566970536fbfff6a686327b1b08de4b18bec8cc2.key
+      - name: Load newsigner2 with DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE set to NEWSIGNER2 
+        run: docker trust key load --name newsigner2 ~/.docker/trust/private/950ec70deaca8bc2f0590fc19f88626fec7e0bfd77be63f3b2764b43f249fa94.key
         env:
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER2 }}
 

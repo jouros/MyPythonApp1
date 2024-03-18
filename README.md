@@ -385,7 +385,7 @@ Error: INSTALLATION FAILED: 1 error occurred:
 
 Generate Docker default ecdsa key:
 ```text
-er trust key generate newsigner2
+$ docker trust key generate newsigner2
 Generating key for newsigner2...
 Enter passphrase for new newsigner2 key with ID 795f9ec:
 Repeat passphrase for new newsigner2 key with ID 795f9ec:
@@ -480,6 +480,72 @@ Administrative keys for jrcjoro1/mypythonapp1
   Repository Key:       93b133c3b226bf5294b166c0bfd2d1f0193dfff42678cadb906e8c0bcc6969f8
   Root Key:     94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
 ```
+
+
+Remove signer:
+```text
+$ docker trust inspect --pretty jrcjoro1/mypythonapp1
+
+Signatures for jrcjoro1/mypythonapp1
+
+SIGNED TAG                                 DIGEST                                                             SIGNERS
+59e4d39fb31b20be1ded800fe4e0a55492af47f6   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+71e65392cd63a9673da21fdefa618772fdff25ee   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+6954f2de0a2bc312b7e527cc7dd57afcad1e87ad   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+d2c284704a2e6010c70cdff71cc34a3433a1083a   9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5   newsigner
+f183e6894cae149b2670bdb32d14172affc8da1b   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+
+List of signers and their keys for jrcjoro1/mypythonapp1
+
+SIGNER       KEYS
+jorosigner   1f3c4beb156f
+newsigner    8eb496d6539a
+newsigner2   795f9ecaea5e
+...
+$
+$ docker trust signer remove newsigner2 jrcjoro1/mypythonapp1
+Removing signer "newsigner2" from jrcjoro1/mypythonapp1...
+Enter passphrase for repository key with ID 93b133c:
+you are not authorized to perform this operation: server returned 401.
+$
+$ docker login --username jrcjoro1
+$
+$ docker trust signer remove newsigner2 jrcjoro1/mypythonapp1
+Removing signer "newsigner2" from jrcjoro1/mypythonapp1...
+Enter passphrase for repository key with ID 93b133c:
+Successfully removed newsigner2 from jrcjoro1/mypythonapp1
+$
+$ docker trust inspect --pretty jrcjoro1/mypythonapp1
+
+Signatures for jrcjoro1/mypythonapp1
+
+SIGNED TAG                                 DIGEST                                                             SIGNERS
+59e4d39fb31b20be1ded800fe4e0a55492af47f6   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+71e65392cd63a9673da21fdefa618772fdff25ee   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+6954f2de0a2bc312b7e527cc7dd57afcad1e87ad   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+d2c284704a2e6010c70cdff71cc34a3433a1083a   9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5   newsigner
+f183e6894cae149b2670bdb32d14172affc8da1b   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+
+List of signers and their keys for jrcjoro1/mypythonapp1
+
+SIGNER       KEYS
+jorosigner   1f3c4beb156f
+newsigner    8eb496d6539a
+...
+```
+
+Above operation does not remove priv key from ~/.docker/trust/private/:
+```text
+$ cat ~/.docker/trust/private/795f9ecaea5e8425e8e1d011566970536fbfff6a686327b1b08de4b18bec8cc2.key
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+role: newsigner2
+
+MIHuMEkGC...
+$
+
+```
+
+
 
 
 ### Notary examples
