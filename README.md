@@ -253,6 +253,8 @@ In Above 'mypythonapp' is first version which I use for comparison and 'mypython
 ### Creating delegation key manually
 
 
+#### rsa-x509
+
 Below I create my own CA, delegation.csr, sign csr with my own CA and create delegation.crt, add new delegation.key to docker trust private and use that new delegation.crt to add new 'newsigner' to repo jrcjoro1/mypythonapp1, which will have now two signers 'jorosigner' and 'newsigner':
 ```text
 $ openssl genrsa -out delegation.key 4096
@@ -371,11 +373,89 @@ Administrative keys for jrcjoro1/mypythonapp1
 
 ```
 
+
+#### Docker default ecdsa key
+
 Unfortunately Connaisseur does not support rsa-x509 keys in Chart version 2.3.4 / App vversion 3.3.4, so Connaisseur config you have to use Docker default generated root pub key. They mentioned in github discussion board that support for rsa-x509 is under delelopment and will be added later on. Connaisseur error related to key format is:
 ```text
 Error: INSTALLATION FAILED: 1 error occurred:
         * admission webhook "connaisseur-svc.connaisseur.svc" denied the request: Trust data targets has an invalid format: 'rsa-x509' is not one of ['ecdsa']
 ```
+
+
+Generate Docker default ecdsa key:
+```text
+er trust key generate newsigner2
+Generating key for newsigner2...
+Enter passphrase for new newsigner2 key with ID 795f9ec:
+Repeat passphrase for new newsigner2 key with ID 795f9ec:
+Successfully generated and loaded private key. Corresponding public key available: /home/agentuser/newsigner2.pub
+```
+
+Above will automatically add priv key to ~/.docker/trust/private/ and pub key is in /home/agentuser/newsigner2.pub as cmd output say. 
+
+First I load new priv key:
+```text
+$ docker trust key load --name newsigner2 ~/.docker/trust/private/795f9ecaea5e8425e8e1d011566970536fbfff6a686327b1b08de4b18bec8cc2.key
+Loading key from "/home/agentuser/.docker/trust/private/795f9ecaea5e8425e8e1d011566970536fbfff6a686327b1b08de4b18bec8cc2.key"...
+Enter passphrase for encrypted key:
+Successfully imported key from /home/agentuser/.docker/trust/private/795f9ecaea5e8425e8e1d011566970536fbfff6a686327b1b08de4b18bec8cc2.key
+```
+
+Next I'll have to log in to docker, or I'll get permission error when trying to add new signer:
+```text
+$ docker trust signer add --key newsigner2.pub newsigner2 docker.io/jrcjoro1/mypythonapp1
+Adding signer "newsigner2" to docker.io/jrcjoro1/mypythonapp1...
+Enter passphrase for repository key with ID 93b133c:
+Passphrase incorrect. Please retry.
+Enter passphrase for repository key with ID 93b133c:
+you are not authorized to perform this operation: server returned 401.
+
+failed to add signer to: docker.io/jrcjoro1/mypythonapp1
+$
+$ docker login --username jrcjoro1
+Password:
+WARNING! Your password will be stored unencrypted in /home/agentuser/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+```
+
+Now I can successfully execute signer add:
+```text
+$ docker trust signer add --key newsigner2.pub newsigner2 docker.io/jrcjoro1/mypythonapp1
+Adding signer "newsigner2" to docker.io/jrcjoro1/mypythonapp1...
+Enter passphrase for repository key with ID 93b133c:
+Successfully added signer: newsigner2 to docker.io/jrcjoro1/mypythonapp1
+```
+
+New signer is on list:
+```text
+$ docker trust inspect --pretty jrcjoro1/mypythonapp1
+
+Signatures for jrcjoro1/mypythonapp1
+
+SIGNED TAG                                 DIGEST                                                             SIGNERS
+59e4d39fb31b20be1ded800fe4e0a55492af47f6   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+71e65392cd63a9673da21fdefa618772fdff25ee   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+6954f2de0a2bc312b7e527cc7dd57afcad1e87ad   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+d2c284704a2e6010c70cdff71cc34a3433a1083a   9171446e3dfba232cb70bbac39b69baa89cb28e24cc3ef0e53acc096f3f287b5   newsigner
+f183e6894cae149b2670bdb32d14172affc8da1b   e87e088c8b335b6cedf12d5cdd720c8900ea4d214fb0a1a8fb5ec8e90b8f51ba   newsigner
+
+List of signers and their keys for jrcjoro1/mypythonapp1
+
+SIGNER       KEYS
+jorosigner   1f3c4beb156f
+newsigner    8eb496d6539a
+newsigner2   795f9ecaea5e
+
+Administrative keys for jrcjoro1/mypythonapp1
+
+  Repository Key:       93b133c3b226bf5294b166c0bfd2d1f0193dfff42678cadb906e8c0bcc6969f8
+  Root Key:     94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
+```
+
 
 
 ### DCT in CI Pipeline
@@ -421,6 +501,7 @@ d2c284704a2e6010c70cdff71cc34a3433a1083a    9171446e3dfba232cb70bbac39b69baa89cb
 ### Exporting root pub key
 
 
+ecdsa-x509:
 ```text
 $ cat ~/.docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq
 $ "keytype": "ecdsa-x509" => 94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
@@ -436,6 +517,10 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3emk7zw/3/Io7U3uTFHc1QShztwx
 -----END PUBLIC KEY-----
 ```
 
+Unfortunately above rsa key can not be used in Connaisseur :(
+
+
+
 ### How to verify that container is signed
 
 Signatures are stored in Notary server and Docker Hub supports all features of DCT. If you wan't to have private registry, you have to set up separate Notary service. In my Lab I use Docker Hub as a Notary service. 
@@ -448,6 +533,7 @@ $ docker pull jrcjoro1/my-python-app:0.0.1
 Error: remote trust data does not exist for docker.io/jrcjoro1/my-python-app: notary.docker.io does not have trust data for docker.io/jrcjoro1/my-python-app
 ```
 
+
 ### Backup all keys
 
 
@@ -457,13 +543,16 @@ Problems will arise if you loose keys, so keep them safe!
 ### Cleanup
 
 
-In Lab environment idea is to play around and be able to start again at any point. With DCT this can be tricky once keys have been created, so easiest way is to initiate new DCT repository and create new keys for that. 
+In Lab environment idea is to play around and be able to start again at any point. With DCT this can be tricky, once keys have been created e.g. root key can not be replaced, so easiest way is to initiate new DCT repository and create all new keys for that. 
+
 
 
 ## CD Pipeline and signature verification in Kubernetes
 
 
+
 ### Connaisseur
+
 
 
 First lets add Connaisseur Helm repo to system (role is in WSL2Fun git repository which is my Kube deployment home), for Ansible I set `REPONAME: connaisseur` and `REPOURL: "https://sse-secure-systems.github.io/connaisseur/charts"` variables in main.yml: 
@@ -483,6 +572,7 @@ NAME                    CHART VERSION   APP VERSION     DESCRIPTION
 connaisseur/connaisseur 2.3.4           3.3.4           Helm chart for Connaisseur - a Kubernetes admis...
 connaisseur/connaisseur 2.3.3           3.3.3           Helm chart for Connaisseur - a Kubernetes admis...
 ```
+
 
 Next I'll deploy Connaisseur with Ansible (role in WSL2Fun repo) and check deployment from K8s:
 ```text
@@ -504,6 +594,7 @@ connaisseur-deployment-fb6df5669-mbcfk   1/1     Running   0          9m41s
 connaisseur-deployment-fb6df5669-w5gzb   1/1     Running   0          9m41s
 ```
 
+
 I created new Helm chart for mypythonapp1: 
 ```text
 $ helm repo update
@@ -520,7 +611,9 @@ NAME                            CHART VERSION   APP VERSION     DESCRIPTION
 custom-repo/mypythonapp1        0.0.1           0.0.1           A Helm chart for Kubernetes
 ```
 
+
 Vault setup for mypythonapp1:
+```text
 $ K8s:
 $ kubectl get secret vault-auth-secret -n test2  --output 'go-template={{ .data.token }}' | base64 --decode > JWT.crt``text
 $ IaC host:
@@ -537,13 +630,13 @@ disable_local_ca_jwt      true
 issuer                    kubernetes/serviceaccount
 ```
 
+
 Next I'll pull new chart into K8s and do manual deployment test:
 ```text
 $ helm pull custom-repo/mypythonapp1 --version 0.0.1 --untar
 $
 $ helm install mypythonapp1 ./mypythonapp1 --dry-run --namespace test2
 $
-
 ```
 
 Next I'll create new Ansible role for `mypythonapp1` for automated IaC deployments: 
