@@ -50,7 +50,7 @@ jobs:
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER2 }}
 
       - name: Signer add with TRUSTREPOPWD 
-        run:  docker trust signer add --key ~/Content_trust/newsigner2.pub newsigner2 ${{ secrets.DOCKERHUB_USERNAME }}/$APP 
+        run:  docker trust signer add --key ~/Content_trust/newsigner2.pub newsigner2 docker.io/${{ secrets.DOCKERHUB_USERNAME }}/$APP 
         env:
           DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
 
@@ -66,7 +66,7 @@ jobs:
       - name: Push Docker image to Dockerhub
         run: docker trust sign docker.io/${{ secrets.DOCKERHUB_USERNAME }}/$APP:$GITHUB_SHA
         env:
-          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTNEWSIGNER2 }}
+          DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE: ${{ secrets.TRUSTREPOPWD }}
 
       - name: Inspect
         run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
