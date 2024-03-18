@@ -534,7 +534,7 @@ newsigner    8eb496d6539a
 ...
 ```
 
-Above operation does not remove priv key from ~/.docker/trust/private/:
+Above operation does not remove priv key from ~/.docker/trust/private/ so signer and key can be returned also:
 ```text
 $ cat ~/.docker/trust/private/795f9ecaea5e8425e8e1d011566970536fbfff6a686327b1b08de4b18bec8cc2.key
 -----BEGIN ENCRYPTED PRIVATE KEY-----
