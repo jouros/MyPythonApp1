@@ -87,7 +87,7 @@ jobs:
 
       - name: Helm login and push
         run: |
-          echo ${{ secrets.DOCKERHUB_TOKEN }} | helm registry login $REGISTRY --username ${{ secrets.DOCKERHUB_USER }} --password-stdin 
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | helm registry login $REGISTRY --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin 
           #
           ls -la ~/helm_template/charts/packages/$APP-$CHART_VER.tgz
           echo "helm push ~/helm_template/charts/packages/$APP-$CHART_VER.tgz oci://$REGISTRY/${{ secrets.DOCKERHUB_USER }}"
