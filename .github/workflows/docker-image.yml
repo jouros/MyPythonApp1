@@ -13,6 +13,8 @@ env:
 #  DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }} not needed beacuse repo is already manually initialized
   APP: 'mypythonapp1'
   DOCKERHUB: 'jrcjoro1'
+  CHART_VER: '0.0.2'
+  REGISTRY: 'docker.io'
 
 jobs:
 
@@ -70,6 +72,10 @@ jobs:
 
       - name: Inspect
         run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
+
+      - name: Run edit_chart script
+        run: edit_chart.sh $CHART_VER $GITHIB_SHA $APP $REGISTRY $GITHUB_SHA
+        shell: bash
 
       - name: Vars
         run: |

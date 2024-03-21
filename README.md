@@ -610,29 +610,6 @@ Administrative keys for jrcjoro1/mypythonapp1
 ```
 
 
-### Exporting root pub key
-
-
-ecdsa-x509:
-```text
-$ cat ~/.docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq
-$ "keytype": "ecdsa-x509" => 94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7
-$
-$ BASE64KEY=$(cat ~/.docker/trust/tuf/docker.io/jrcjoro1/mypythonapp1/metadata/root.json | jq '.signed.keys."94a1795e22a745bc1dc3cb98a16bc78e861a2f4ae01deb7bfc58598461bdb2f7".keyval.public' | sed -e 's/^"//' -e 's/"$//')
-$
-$ echo $BASE64KEY | base64 -d > rootpub.crt
-$
-$ openssl x509 -in rootpub.crt -pubkey -noout
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3emk7zw/3/Io7U3uTFHc1QShztwx
-...
------END PUBLIC KEY-----
-```
-
-Unfortunately above rsa key can not be used in Connaisseur :(
-
-
-
 ### How to verify that container is signed
 
 Signatures are stored in Notary server and Docker Hub supports all features of DCT. If you wan't to have private registry, you have to set up separate Notary service. In my Lab I use Docker Hub as a Notary service. 
@@ -659,6 +636,7 @@ In Lab environment idea is to play around and be able to start again at any poin
 
 
 
+
 ## CD Pipeline and signature verification in Kubernetes
 
 
@@ -666,8 +644,63 @@ In Lab environment idea is to play around and be able to start again at any poin
 ### Connaisseur
 
 
+Connaisseur is working with mutating webhooks:
+```text
+$  k get mutatingwebhookconfigurations -n test2
+NAME                           WEBHOOKS   AGE
+connaisseur-webhook            1          21m
+vault-k8s-agent-injector-cfg   1          11m
+$
+$ k get mutatingwebhookconfigurations connaisseur-webhook -n test2 -o yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    helm.sh/hook: post-install, post-upgrade, post-rollback
+  creationTimestamp: "2024-03-20T12:40:12Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: connaisseur-webhook
+    app.kubernetes.io/instance: connaisseur
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: connaisseur
+    helm.sh/chart: connaisseur-2.3.4
+  name: connaisseur-webhook
+  resourceVersion: "912772"
+  uid: 9de97d6e-4359-4a80-92bd-edf1d3ae236b
+webhooks:
+- admissionReviewVersions:
+...
+```
 
-First lets add Connaisseur Helm repo to system (role is in WSL2Fun git repository which is my Kube deployment home), for Ansible I set `REPONAME: connaisseur` and `REPOURL: "https://sse-secure-systems.github.io/connaisseur/charts"` variables in main.yml: 
+
+Export DCT root pub key for Connaisseur Helm chart:
+```text
+$ cd ~/.docker/trust/private/
+$
+$ grep 'role: root' *
+7430b129956dd2a016d354eb555bf60908ea2fe37824d1420fb569131a9fd210.key:role: root
+$
+$ cd 
+$
+$ cp ~/.docker/trust/private/7430b129956dd2a016d354eb555bf60908ea2fe37824d1420fb569131a9fd210.key ./root-priv.key
+$
+$ sed -i -e '/^role:\sroot$/d' -e '/^$/d' root-priv.key
+$
+$ openssl ec -in root-priv.key -pubout -out root-pub.pem
+read EC key
+Enter pass phrase for root-priv.key:
+writing EC key
+$
+$ cat root-pub.pem
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3emk7zw/3/Io7U3uTFHc1QShztwx
+i4kSpNTxNPhzMawCYz+Bm3QDDiG5SI3aa94C4p6r2/G8A++olF/voc3+IQ==
+-----END PUBLIC KEY-----
+```
+
+
+Add Connaisseur Helm repo to system (role is in WSL2Fun git repository which is my Kube deployment home), for Ansible I set `REPONAME: connaisseur` and `REPOURL: "https://sse-secure-systems.github.io/connaisseur/charts"` variables in main.yml: 
 ```text
 $ ansible-playbook main.yml --tags "helm-addrepo"
 $
@@ -707,30 +740,45 @@ connaisseur-deployment-fb6df5669-w5gzb   1/1     Running   0          9m41s
 ```
 
 
-I created new Helm chart for mypythonapp1: 
+Test Connaisseur deployment and signature validation with Securesystemsengineering signed and unsigned Pods:
 ```text
-$ helm repo update
-Hang tight while we grab the latest from your chart repositories...
-...Successfully got an update from the "hashicorp" chart repository
-...Successfully got an update from the "custom-repo" chart repository
-...Successfully got an update from the "connaisseur" chart repository
-...Successfully got an update from the "bitnami" chart repository
-Update Complete. ⎈Happy Helming!⎈
+$ k run demo --image=docker.io/securesystemsengineering/testimage:signed
+pod/demo created
 $
-$ helm search repo -l custom-repo
-NAME                            CHART VERSION   APP VERSION     DESCRIPTION
-...
-custom-repo/mypythonapp1        0.0.1           0.0.1           A Helm chart for Kubernetes
+$ k get pods
+NAME   READY   STATUS    RESTARTS   AGE
+demo   1/1     Running   0          25s
+$
+$ k run demo --image=docker.io/securesystemsengineering/testimage:unsigned
+Error from server: admission webhook "connaisseur-svc.connaisseur.svc" denied the request: Unable to find signed digest for image docker.io/securesystemsengineering/testimage:unsigned.
 ```
 
+As we can see, unsigned deployment failed. Lets test mypythonapp1:
+```text
+$ k run mypythonapp1 --image=docker.io/jrcjoro1/mypythonapp1:a1cc4decc0670cb8a0054e1649c0cb21bd4a7604 -n test2
+pod/mypythonapp1 created
 
-Vault setup for mypythonapp1:
+``` 
+
+
+#### Vault setup for mypythonapp1
+
+
+Settiing up Vault for mypythonapp1:
 ```text
 $ K8s:
-$ kubectl get secret vault-auth-secret -n test2  --output 'go-template={{ .data.token }}' | base64 --decode > JWT.crt``text
+$ kubectl get secret vault-auth-secret -n test2  --output 'go-template={{ .data.token }}' | base64 --decode > JWT.crt
+$
 $ IaC host:
 $ scp -3 -p k8s-admin@192.168.122.10:~/Mypythonapp/JWT.crt management@192.168.122.14:~/JWT.crt
+$
 $ Vault:
+$
+$ If it has been a while since talking to Vaulti, token will have timeout and I have renew it or I'll get 'permission deniend for mountpoint auth/kubernetes:
+$ vault write auth/kubernetes/role/kubereadonlyrole bound_service_account_names=mypythonappsa bound_service_account_namespaces='*' policies=kubepolicy ttl=96h token_max_ttl=144h
+Success! Data written to: auth/kubernetes/role/kubereadonlyrole
+$
+$ Next I'll check JWT and write config:
 $ vault write auth/kubernetes/config kubernetes_host="https://kube1:6443" token_reviewer_jwt="$JWT" kubernetes_ca_cert="$KUBE_CA_CERT" disable_local_ca_jwt="true" issuer="kubernetes/serviceaccount" disable_iss_validation="true"
 Success! Data written to: auth/kubernetes/config
 $
@@ -743,15 +791,114 @@ issuer                    kubernetes/serviceaccount
 ```
 
 
+#### Helm chart deployment for mypythonapp1
+
+
 Next I'll pull new chart into K8s and do manual deployment test:
 ```text
+$ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+$
+$ helm search repo -r 'mypythonapp1'
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+custom-repo/mypythonapp1        0.0.1           0.0.1           A Helm chart for Kubernetes
+$
 $ helm pull custom-repo/mypythonapp1 --version 0.0.1 --untar
 $
 $ helm install mypythonapp1 ./mypythonapp1 --dry-run --namespace test2
 $
+$ helm install mypythonapp1 ./mypythonapp1 --namespace test2
+NAME: mypythonapp1
+LAST DEPLOYED: Tue Mar 19 15:32:10 2024
+NAMESPACE: test2
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace test2 -l "app.kubernetes.io/name=mypythonapp1,app.kubernetes.io/instance=mypythonapp1" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace test2 $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace test2 port-forward $POD_NAME 8080:$CONTAINER_PORT
 ```
 
-Next I'll create new Ansible role for `mypythonapp1` for automated IaC deployments: 
+
+Next I'll create new role for for automated Ansible deployments: 
 ```text
-sadasd
+$ ansible-playbook main.yml --tags "helm-mypythonapp1"
+$
+$ k get pods -n test2
+NAME                                        READY   STATUS    RESTARTS   AGE
+mypythonapp1-77594795c6-sj94p               2/2     Running   0          7m45s
+vault-k8s-agent-injector-779fdfc4f4-fsdtg   1/1     Running   0          42m
+$
+$ curl http://10.110.141.64:8080
+{"data": {"password": "two", "username": "one"}, "metadata": {"created_time": "2024-02-15T12:16:15.948350293Z", "custom_metadata": null, "deletion_time": "", "destroyed": false, "version": 5}}
 ```
+
+Mypythonapp1 is happily running :)
+
+
+
+#### Debugging Connaisseur
+
+
+```text
+$ k logs deployment/connaisseur-deployment -n connaisseur | jq
+```
+
+Calico CNI is causing a lot of noise: 
+```text
+$ k logs deployment/connaisseur-deployment -n connaisseur | jq | grep 'verific'
+Found 3 pods, using pod/connaisseur-deployment-65f9f9fc7f-4qg4n
+  "message": "starting verification of image \"docker.io/calico/typha:v3.26.4\" using rule \"docker.io/calico/*\" with arguments {} and validator \"allow\".",
+  "message": "successful verification of image \"docker.io/calico/typha:v3.26.4\"",
+  "message": "starting verification of image \"docker.io/calico/node:v3.26.4\" using rule \"docker.io/calico/*\" with arguments {} and validator \"allow\".",
+  "message": "successful verification of image \"docker.io/calico/node:v3.26.4\"",
+  "message": "starting verification of image \"docker.io/calico/pod2daemon-flexvol:v3.26.4\" using rule \"docker.io/calico/*\" with arguments {} and validator \"allow\".",
+  "message": "successful verification of image \"docker.io/calico/pod2daemon-flexvol:v3.26.4\"",
+```
+
+
+### Helm chart creation in CI pipeline
+
+
+First I'll add my custom-repo to Runner:
+```text
+$ helm repo add custom-repo https://jouros.github.io/helm-repo
+"custom-repo" has been added to your repositories
+$
+$ helm search repo -r 'mypythonapp1'
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+custom-repo/mypythonapp1        0.0.1           0.0.1           A Helm chart for Kubernetes
+$
+
+```
+
+I'll use above repo just to pull my latest chart version to Runner and make that chart template for CI pipeline. 
+
+
+I use very simple bash + sed combination to set variables into build based Chart:
+```text
+sd
+```
+
+
+Charts are also stored locally in Runner:
+```text
+sadasdas
+```
+
+Manual testing for OCI deployment:
+```text
+asdasd
+```
+
+
+### CD automation with Flux 
+
+
+Dockerhub is OCI compatible so I can store Helm charts into registry:
+```text
+asdasdas
+```
+
