@@ -14,7 +14,7 @@ env:
   APP: 'mypythonapp1'
   DOCKERHUB: 'jrcjoro1'
   CHART_VER: '0.0.2'
-  REGISTRY: 'docker.io'
+  REGISTRY: 'registry-1.docker.io'
 
 jobs:
 
@@ -84,6 +84,16 @@ jobs:
       - name: Helm package
         run: helm package --app-version $GITHUB_SHA ~/helm_template/charts/$GITHUB_SHA -d ~/helm_template/charts/packages
         shell: bash
+
+      - name: Helm login and push
+        run: |
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | helm registry login $REGISTRY --username ${{ secrets.DOCKERHUB_USER }} --password ${{ secrets.DOCKERHUB_TOKEN }}
+          #
+          ls -la ~/helm_template/charts/packages/$APP-$CHART_VER.tgz
+          echo "helm push ~/helm_template/charts/packages/$APP-$CHART_VER.tgz oci://$REGISTRY/${{ secrets.DOCKERHUB_USER }}"
+        shell: bash
+        env:
+          HELM_EXPERIMENTAL_OCI: 1
 
       - name: Vars
         run: |
