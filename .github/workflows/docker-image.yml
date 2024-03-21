@@ -74,7 +74,7 @@ jobs:
         run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
 
       - name: Run edit_chart script in Runner
-        run: ~/bin/edit_chart.sh $CHART_VER $GITHIB_SHA $APP $REGISTRY $GITHUB_SHA
+        run: ~/bin/edit_chart.sh $CHART_VER $GITHUB_SHA $APP $REGISTRY $GITHUB_SHA
         shell: bash
 
       - name: Vars
