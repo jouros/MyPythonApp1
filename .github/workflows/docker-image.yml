@@ -77,6 +77,10 @@ jobs:
         run: ~/bin/edit_chart.sh $CHART_VER $GITHUB_SHA $APP ${{ secrets.DOCKERHUB_USERNAME }} $GITHUB_SHA
         shell: bash
 
+      - name: Helm lint
+        run: helm lint ~/helm_template/charts/$GITHUB_SHA
+        shell: bash
+
       - name: Vars
         run: |
           echo "GITHUB_REF: $GITHUB_REF"
