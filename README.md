@@ -1,6 +1,9 @@
 # MyPythonApp1
 
-Github Actions Workflow CI pipeline lab. I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is Rootless, so there is just one access restricted regular user account for Docker and Runner. 
+
+Github Actions Workflow CI/CD pipeline lab with Container digital signatures (Docker Content Trust), Container security scanning (Aquasecurity Trivy), OCI Helm Charts, signature verification (Connaisseur), Hashi Vault integration and CD pipeline automation with Flux.
+
+I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is Rootless, so there is just one access restricted regular user account for Docker and Runner.
 
 For Ansible I'm using account 'management' with sudo rights, Runner regular user is 'agentuser'. Ssh Pub key is only allowd for management user. 
 
@@ -879,18 +882,35 @@ I'll use above repo just to pull my latest chart version to Runner and make that
 
 I use very simple bash + sed combination to set variables into build based Chart:
 ```text
-sd
+$ cat ~/bin/edit_chart.sh
+#!/bin/bash
+
+chartVersion=$1
+imageTag=$2
+imageName=$3
+userName=$4
+BuildSourceVersion=$5
+
+echo "parameters from pipeline: '$1' '$2'  '$3' '$4' '$5'"
+
+
+cp -r /home/agentuser/helm_template/charts/mypythonapp1 "/home/agentuser/helm_template/charts/$BuildSourceVersion"
+
+sed -i "s/^\(version:\).*/\1 $chartVersion/" "/home/agentuser/helm_template/charts/$BuildSourceVersion/Chart.yaml"
+sed -i "s/^\(appVersion:\).*/\1 $imageTag/" "/home/agentuser/helm_template/charts/$BuildSourceVersion/Chart.yaml"
+sed -i "s/^\(name:\).*/\1 $imageName/" "/home/agentuser/helm_template/charts/$BuildSourceVersion/Chart.yaml"
+sed -i "s/\(tag:\).*/\1 \"$BuildSourceVersion\"/" "/home/agentuser/helm_template/charts/$BuildSourceVersion/values.yaml"
+sed -i "s/\(repository:\).*/\1 $userName\/$imageName/" "/home/agentuser/helm_template/charts/$BuildSourceVersion/values.yaml"
 ```
 
 
-Charts are also stored locally in Runner:
-```text
-sadasdas
-```
+Charts are also stored locally in Runner
 
-Manual testing for OCI deployment:
+Manual testing for OCI:
 ```text
-asdasd
+$ helm pull oci://registry-1.docker.io/jrcjoro1/mypythonapp1 --version 0.0.2
+Pulled: registry-1.docker.io/jrcjoro1/mypythonapp1:0.0.2
+Digest: sha256:41532be97d0cd5cb238b996579174f0010712a4b8ca5834801325f94a0646410
 ```
 
 
