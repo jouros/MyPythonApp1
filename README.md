@@ -906,7 +906,7 @@ sed -i "s/\(repository:\).*/\1 $userName\/$imageName/" "/home/agentuser/helm_tem
 
 Charts are also stored locally in Runner
 
-Manual testing for OCI:
+Dockerhub is OCI compatible so I can store Helm charts into registry:
 ```text
 $ helm pull oci://registry-1.docker.io/jrcjoro1/mypythonapp1 --version 0.0.2
 Pulled: registry-1.docker.io/jrcjoro1/mypythonapp1:0.0.2
@@ -917,8 +917,61 @@ Digest: sha256:41532be97d0cd5cb238b996579174f0010712a4b8ca5834801325f94a0646410
 ### CD automation with Flux 
 
 
-Dockerhub is OCI compatible so I can store Helm charts into registry:
+For Flux deployment I have main-flux.yml + required roles in WSL2FUN repo:
 ```text
-asdasdas
+$ ansible-playbook main-flux.yml --tags "download-flux"
+$
+$ ansible-playbook main-flux.yml --tags "deploy-flux"
+$
+$ ansible-playbook main-flux.yml --tags "precheck-flux"
+ok: [kube1] =>
+  msg:
+  - ► checking prerequisites
+  - ✔ Kubernetes 1.28.2 >=1.26.0-0
+  - ✔ prerequisites checks passed
 ```
+
+
+I'll give Docker Hub credentials for Flux with docker-registry secret:
+```text
+$ ansible-playbook main-flux.yml --tags "deployment-setup"
+ok: [kube1] =>
+  msg: secret/fluxregcred created
+$
+$ Check from K8s:
+$ k get secret fluxregcred -n test2
+NAME          TYPE                             DATA   AGE
+fluxregcred   kubernetes.io/dockerconfigjson   1      2m13s
+```
+
+```text
+$ ansible-playbook main-flux.yml --tags "bootstrap-flux"
+ok: [kube1] =>
+  msg:
+    changed: true
+    cmd: |-
+      flux bootstrap github --owner=jouros --repository=FluxKube1 --branch=main --path=clusters/kube1 --personal --private --timeout=2m0s --verbose
+...
+```
+
+```text
+$ tree
+.
+└── clusters
+    └── kube1
+        └── flux-system
+            ├── gotk-components.yaml
+            ├── gotk-sync.yaml
+            └── kustomization.yaml
+```
+
+```text
+$ k get pods -n flux-system
+NAME                                       READY   STATUS    RESTARTS   AGE
+helm-controller-5d8d5fc6fd-cc2t5           1/1     Running   0          3h2m
+kustomize-controller-7b7b47f459-6wprr      1/1     Running   0          3h2m
+notification-controller-5bb6647999-qb28t   1/1     Running   0          3h2m
+source-controller-7667765cd7-m59t8         1/1     Running   0          3h2m
+```
+
 
