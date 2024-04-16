@@ -81,7 +81,7 @@ jobs:
         run: helm lint ~/helm_template/charts/$GITHUB_SHA
         shell: bash
 
-      - name: Helm package
+      - name: Helm package creation
         run: helm package --app-version $GITHUB_SHA ~/helm_template/charts/$GITHUB_SHA -d ~/helm_template/charts/packages
         shell: bash
 
