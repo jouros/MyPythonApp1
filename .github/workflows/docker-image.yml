@@ -73,7 +73,7 @@ jobs:
       - name: Inspect
         run: docker trust inspect --pretty ${{ secrets.DOCKERHUB_USERNAME }}/$APP
 
-      - name: Run edit_chart script in Runner
+      - name: Run edit_chart script in selfhosted Runner
         run: ~/bin/edit_chart.sh $CHART_VER $GITHUB_SHA $APP ${{ secrets.DOCKERHUB_USERNAME }} $GITHUB_SHA
         shell: bash
 
