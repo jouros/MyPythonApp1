@@ -1,9 +1,9 @@
 # MyPythonApp1
 
 
-Github Actions Workflow CI/CD pipeline lab with Container digital signatures (Docker Content Trust), Container security scanning (Aquasecurity Trivy), OCI Helm Charts, signature verification (Connaisseur), Hashi Vault integration and CD pipeline automation with Flux.
+Github Actions Workflow CI/CD pipeline lab with Docker Hub integration, selfhosted Actions Runner, Container digital signatures (Docker Content Trust), Container security scanning (Aquasecurity Trivy), OCI Helm Charts, DCT signature verification (Connaisseur), Hashi Vault integration and CD pipeline automation with Flux.
 
-I'm using WSL2 Windows host as cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is Rootless, so there is just one access restricted regular user account for Docker and Runner.
+I'm using WSL2 Windows host as my cloud platform. I'm using Self Hosted Github Actions Runner to execute Github Actions. Runner is configured with Ansible and Docker deployment is Rootless, so there is just one access restricted regular user account for Docker and Runner.
 
 For Ansible I'm using account 'management' with sudo rights, Runner regular user is 'agentuser'. Ssh Pub key is only allowd for management user. 
 
