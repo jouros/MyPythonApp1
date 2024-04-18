@@ -935,7 +935,7 @@ ok: [kube1] =>
 ```
 
 
-
+Bootstrap Flux:
 ```text
 $ ansible-playbook main-flux.yml --tags "bootstrap-flux"
 ok: [kube1] =>
@@ -946,6 +946,7 @@ ok: [kube1] =>
 ...
 ```
 
+Initial Flux Git structure:
 ```text
 $ tree
 .
@@ -957,6 +958,8 @@ $ tree
             └── kustomization.yaml
 ```
 
+
+Flux Pods after deployment:
 ```text
 $ k get pods -n flux-system
 NAME                                       READY   STATUS    RESTARTS   AGE
@@ -966,7 +969,8 @@ notification-controller-5bb6647999-qb28t   1/1     Running   0          3h2m
 source-controller-7667765cd7-m59t8         1/1     Running   0          3h2m
 ```
 
-#### Flux git setup
+
+#### Flux git cluster setup
 
 
 Flux setup in git:
@@ -990,7 +994,15 @@ $ tree
         └── kustomization.yaml
 ```
 
+I create Flux Docker Hub credentials with Ansible, below role will create repo-auth.yaml into K8s:
+```text
+$ ansible-playbook main-flux.yml --tags "flux-hubsecret"
 
+
+Next I deploy above created repo-auth.yaml:
+```text
+$ ansible-playbook main-flux.yml --tags "deploy-fluxhubsecret"
+```
 
 Flux cluster tenants: clusters/kube1/tenants.yaml
 ```text
