@@ -1192,10 +1192,36 @@ kube-system        kube-scheduler-kube1                        1/1     Running  
 test2              mypythonapp1-6866d989dd-k9bjm               2/2     Running   0                 87m
 test2              vault-k8s-agent-injector-779fdfc4f4-fsdtg   1/1     Running   62 (107m ago)     28d
 tigera-operator    tigera-operator-7f8cd97876-gdwwj            1/1     Running   57 (4h46m ago)    121d
-$
+
+
+
+$ flux get sources all -A
+NAMESPACE       NAME                            REVISION                SUSPENDED       READY   MESSAGE
+flux-system     gitrepository/flux-system       main@sha1:e2b6b998      False           True    stored artifact for revision 'main@sha1:e2b6b998'
+
+NAMESPACE       NAME                            REVISION        SUSPENDED       READY   MESSAGE
+test2           helmrepository/mypythonapp1                     False           True    Helm repository is Ready
+
+NAMESPACE       NAME                            REVISION        SUSPENDED       READY   MESSAGE
+test2           helmchart/test2-mypythonapp1    0.0.4           False           True    pulled 'mypythonapp1' chart with version '0.0.4'
+
+
+
+$ helm list -A
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
+connaisseur     connaisseur     1               2024-03-22 17:00:10.68997755 +0200 EET  deployed        connaisseur-2.3.4       3.3.4
+mypythonapp1    test2           1               2024-04-18 11:48:57.226345153 +0000 UTC deployed        mypythonapp1-0.0.4      a8f774b6c721db8ccbe4884d978365eb22279302
+vault-k8s       test2           1               2024-03-20 14:49:46.930662274 +0200 EET deployed        vault-0.27.0            1.15.2
 ```
 
 
+Final test is to call mypythonapp1:
+```text
+$ curl http://10.105.217.188:8080
+{"data": {"password": "two", "username": "one"}, "metadata": {"created_time": "2024-02-15T12:16:15.948350293Z", "custom_metadata": null, "deletion_time": "", "destroyed": false, "version": 5}}
+```
+
+As a final note, easiest way to fix something is just to create new Chart version and let Flux do its thing, have fun :)
 
 
 
