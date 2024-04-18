@@ -1155,6 +1155,45 @@ test2           helmchart/test2-mypythonapp1    0.0.3           False           
 In my previous deployments I have used different SA and I changed my Chart template to have this new 'kube1' SA for this Flux CI/CD deplolyment. 
 
 
+My full K8s setup now:
+```text
+$ k get pods --all-namespaces
+NAMESPACE          NAME                                        READY   STATUS    RESTARTS          AGE
+calico-apiserver   calico-apiserver-597cc87d47-dmv9p           1/1     Running   95 (107m ago)     121d
+calico-apiserver   calico-apiserver-597cc87d47-qgx6j           1/1     Running   95 (107m ago)     121d
+calico-system      calico-kube-controllers-9fd9bb574-2bwpc     1/1     Running   107 (107m ago)    121d
+calico-system      calico-node-4g4ks                           1/1     Running   29 (107m ago)     121d
+calico-system      calico-node-94lkx                           1/1     Running   29 (107m ago)     121d
+calico-system      calico-node-k7dld                           1/1     Running   29 (107m ago)     121d
+calico-system      calico-node-xrd4v                           1/1     Running   29 (107m ago)     121d
+calico-system      calico-typha-756766ddf6-95d78               1/1     Running   56 (4h46m ago)    121d
+calico-system      calico-typha-756766ddf6-bwwzs               1/1     Running   162 (4h46m ago)   121d
+calico-system      csi-node-driver-6kw25                       2/2     Running   58 (107m ago)     121d
+calico-system      csi-node-driver-mbgcp                       2/2     Running   58 (107m ago)     121d
+calico-system      csi-node-driver-pc5m7                       2/2     Running   58 (107m ago)     121d
+calico-system      csi-node-driver-xjjf2                       2/2     Running   58 (107m ago)     121d
+connaisseur        connaisseur-deployment-84b547c4cd-2cl87     1/1     Running   7 (107m ago)      26d
+connaisseur        connaisseur-deployment-84b547c4cd-gl77p     1/1     Running   7 (107m ago)      26d
+connaisseur        connaisseur-deployment-84b547c4cd-tnp79     1/1     Running   7 (107m ago)      26d
+flux-system        helm-controller-5d8d5fc6fd-cc2t5            1/1     Running   8 (107m ago)      26d
+flux-system        kustomize-controller-7b7b47f459-6wprr       1/1     Running   61 (107m ago)     26d
+flux-system        notification-controller-5bb6647999-qb28t    1/1     Running   8 (107m ago)      26d
+flux-system        source-controller-7667765cd7-m59t8          1/1     Running   70 (107m ago)     26d
+kube-system        coredns-5dd5756b68-lm96x                    1/1     Running   29 (107m ago)     121d
+kube-system        coredns-5dd5756b68-tfjp4                    1/1     Running   29 (107m ago)     121d
+kube-system        etcd-kube1                                  1/1     Running   29 (107m ago)     121d
+kube-system        kube-apiserver-kube1                        1/1     Running   29 (107m ago)     121d
+kube-system        kube-controller-manager-kube1               1/1     Running   46 (4h46m ago)    121d
+kube-system        kube-proxy-8ccd8                            1/1     Running   29 (107m ago)     121d
+kube-system        kube-proxy-bndk9                            1/1     Running   29 (107m ago)     121d
+kube-system        kube-proxy-hwcbh                            1/1     Running   29 (107m ago)     121d
+kube-system        kube-proxy-rl8kx                            1/1     Running   29 (107m ago)     121d
+kube-system        kube-scheduler-kube1                        1/1     Running   29 (107m ago)     121d
+test2              mypythonapp1-6866d989dd-k9bjm               2/2     Running   0                 87m
+test2              vault-k8s-agent-injector-779fdfc4f4-fsdtg   1/1     Running   62 (107m ago)     28d
+tigera-operator    tigera-operator-7f8cd97876-gdwwj            1/1     Running   57 (4h46m ago)    121d
+$
+```
 
 
 
