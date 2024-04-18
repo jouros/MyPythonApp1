@@ -997,6 +997,7 @@ $ tree
 I create Flux Docker Hub credentials with Ansible, below role will create repo-auth.yaml into K8s:
 ```text
 $ ansible-playbook main-flux.yml --tags "flux-hubsecret"
+```
 
 
 Next I deploy above created repo-auth.yaml:
