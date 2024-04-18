@@ -917,6 +917,9 @@ Digest: sha256:41532be97d0cd5cb238b996579174f0010712a4b8ca5834801325f94a0646410
 ### CD automation with Flux 
 
 
+#### Flux deployment with Ansible
+
+
 For Flux deployment I have main-flux.yml + required roles in WSL2FUN repo:
 ```text
 $ ansible-playbook main-flux.yml --tags "download-flux"
@@ -932,17 +935,6 @@ ok: [kube1] =>
 ```
 
 
-I'll give Docker Hub credentials for Flux with docker-registry secret:
-```text
-$ ansible-playbook main-flux.yml --tags "deployment-setup"
-ok: [kube1] =>
-  msg: secret/fluxregcred created
-$
-$ Check from K8s:
-$ k get secret fluxregcred -n test2
-NAME          TYPE                             DATA   AGE
-fluxregcred   kubernetes.io/dockerconfigjson   1      2m13s
-```
 
 ```text
 $ ansible-playbook main-flux.yml --tags "bootstrap-flux"
@@ -973,5 +965,189 @@ kustomize-controller-7b7b47f459-6wprr      1/1     Running   0          3h2m
 notification-controller-5bb6647999-qb28t   1/1     Running   0          3h2m
 source-controller-7667765cd7-m59t8         1/1     Running   0          3h2m
 ```
+
+#### Flux git setup
+
+
+Flux setup in git:
+```text
+$ tree
+.
+├── clusters
+│   └── kube1
+│       ├── flux-system
+│       │   ├── gotk-components.yaml
+│       │   ├── gotk-sync.yaml
+│       │   └── kustomization.yaml
+│       └── tenants.yaml
+└── tenants
+    ├── base
+    │   └── mypythonapp1
+    │       ├── kustomization.yaml
+    │       ├── rbac.yaml
+    │       └── sync.yaml
+    └── kube1
+        └── kustomization.yaml
+```
+
+
+
+Flux cluster tenants: clusters/kube1/tenants.yaml
+```text
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tenants
+  namespace: flux-system
+spec:
+  interval: 5m
+  serviceAccountName: kustomize-controller
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./tenants/kube1
+  prune: true
+```
+
+Tenant Kustomization: tenants/kube1/kustomization.yaml
+```text
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base/mypythonapp1
+```
+
+Flux RBAC: tenants/base/mypythonapp1/rbac.yaml
+```text
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    toolkit.fluxcd.io/tenant: kube1
+  name: test2
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    toolkit.fluxcd.io/tenant: kube1
+  name: kube1
+  namespace: test2
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    toolkit.fluxcd.io/tenant: kube1
+  name: gotk-reconciler
+  namespace: test2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: gotk:test2:reconciler
+- kind: ServiceAccount
+  name: kube1
+  namespace: test2
+```
+
+
+Flux OCI config: tenants/base/mypythonapp1/sync.yaml
+```text
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: mypythonapp1
+  namespace: test2
+spec:
+  interval: 1m0s
+  type: oci
+  url: oci://docker.io/jrcjoro1 #
+  secretRef:
+    name: fluxregcred
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: mypythonapp1
+  namespace: test2
+spec:
+  interval: 1m0s
+  timeout: 2m
+  chart:
+    spec:
+      chart: mypythonapp1
+      reconcileStrategy: ChartVersion
+      version: '0.*.*'
+      sourceRef:
+        kind: HelmRepository
+        name: mypythonapp1
+      interval: 1m0s
+  releaseName: mypythonapp1
+  serviceAccountName: kube1
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  test:
+    enable: false
+```
+
+
+I added new SA 'kube1' into Vault config, beacuse mypythonapp1 need Vault connection for start:
+```text
+$ vault write auth/kubernetes/role/kubereadonlyrole bound_service_account_names='mypythonappsa,kube1' bound_service_account_namespaces='*' policies=kubepolicy ttl=96h token_max_ttl=144h
+Success! Data written to: auth/kubernetes/role/kubereadonlyrole
+$
+$ vault read auth/kubernetes/role/kubereadonlyrole
+...
+bound_service_account_names         [mypythonappsa kube1]
+```
+
+Preparing state:
+```text
+$ k get pods -n test2
+NAME                                        READY   STATUS            RESTARTS       AGE
+mypythonapp1-6866d989dd-k9bjm               0/2     PodInitializing   0              4m31s
+vault-k8s-agent-injector-779fdfc4f4-fsdtg   1/1     Running           62 (24m ago)   28d
+```
+
+Final stage:
+```text
+$ k get pods -n test2
+NAME                                        READY   STATUS    RESTARTS       AGE
+mypythonapp1-6866d989dd-k9bjm               2/2     Running   0              4m35s
+vault-k8s-agent-injector-779fdfc4f4-fsdtg   1/1     Running   62 (24m ago)   28d
+```
+
+Final stage from Flux:
+```text
+$ flux get sources all -A
+NAMESPACE       NAME                            REVISION                SUSPENDED       READY   MESSAGE
+flux-system     gitrepository/flux-system       main@sha1:e2b6b998      False           True    stored artifact for revision 'main@sha1:e2b6b998'
+
+NAMESPACE       NAME                            REVISION        SUSPENDED       READY   MESSAGE
+test2           helmrepository/mypythonapp1                     False           True    Helm repository is Ready
+
+NAMESPACE       NAME                            REVISION        SUSPENDED       READY   MESSAGE
+test2           helmchart/test2-mypythonapp1    0.0.3           False           True    pulled 'mypythonapp1' chart with version '0.0.3'
+```
+
+In my previous deployments I have used different SA and I changed my Chart template to have this new 'kube1' SA for this Flux CI/CD deplolyment. 
+
+
+
+
+
+
+
+
+
 
 
