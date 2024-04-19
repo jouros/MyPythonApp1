@@ -1113,6 +1113,70 @@ spec:
 ```
 
 
+Above Flux config can be validatetd with: https://github.com/fluxcd/flux2-kustomize-helm-example/blob/main/scripts/validate.sh:
+```text
+$ ~/bin/validate.sh
+INFO - Downloading Flux OpenAPI schemas
+INFO - Validating ./clusters/kube1/flux-system/gotk-sync.yaml
+INFO - Validating ./clusters/kube1/flux-system/gotk-components.yaml
+INFO - Validating ./clusters/kube1/flux-system/kustomization.yaml
+INFO - Validating ./clusters/kube1/tenants.yaml
+INFO - Validating ./tenants/base/mypythonapp1/sync.yaml
+INFO - Validating ./tenants/base/mypythonapp1/kustomization.yaml
+INFO - Validating ./tenants/base/mypythonapp1/rbac.yaml
+INFO - Validating ./tenants/kube1/kustomization.yaml
+INFO - Validating clusters
+./clusters/kube1/tenants.yaml - Kustomization tenants is valid
+INFO - Validating kustomize overlays
+INFO - Validating kustomization ./clusters/kube1/flux-system/
+stdin - Namespace flux-system is valid
+stdin - buckets.source.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - alerts.notification.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - helmcharts.source.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - helmrepositories.source.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - helmreleases.helm.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - ocirepositories.source.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - providers.notification.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - kustomizations.kustomize.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - gitrepositories.source.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - receivers.notification.toolkit.fluxcd.io CustomResourceDefinition skipped
+stdin - ServiceAccount helm-controller is valid
+stdin - ServiceAccount source-controller is valid
+stdin - ServiceAccount kustomize-controller is valid
+stdin - ServiceAccount notification-controller is valid
+stdin - ResourceQuota critical-pods-flux-system is valid
+stdin - ClusterRole flux-edit-flux-system is valid
+stdin - ClusterRole flux-view-flux-system is valid
+stdin - ClusterRole crd-controller-flux-system is valid
+stdin - Service notification-controller is valid
+stdin - Service webhook-receiver is valid
+stdin - Service source-controller is valid
+stdin - ClusterRoleBinding cluster-reconciler-flux-system is valid
+stdin - ClusterRoleBinding crd-controller-flux-system is valid
+stdin - Deployment helm-controller is valid
+stdin - Kustomization flux-system is valid
+stdin - Deployment notification-controller is valid
+stdin - Deployment source-controller is valid
+stdin - Deployment kustomize-controller is valid
+stdin - NetworkPolicy allow-egress is valid
+stdin - NetworkPolicy allow-webhooks is valid
+stdin - NetworkPolicy allow-scraping is valid
+stdin - GitRepository flux-system is valid
+INFO - Validating kustomization ./tenants/base/mypythonapp1/
+stdin - RoleBinding gotk-reconciler is valid
+stdin - Namespace test2 is valid
+stdin - ServiceAccount kube1 is valid
+stdin - HelmRepository mypythonapp1 is valid
+stdin - HelmRelease mypythonapp1 is valid
+INFO - Validating kustomization ./tenants/kube1/
+stdin - Namespace test2 is valid
+stdin - HelmRelease mypythonapp1 is valid
+stdin - ServiceAccount kube1 is valid
+stdin - RoleBinding gotk-reconciler is valid
+stdin - HelmRepository mypythonapp1 is valid
+```
+
+
 I added new SA 'kube1' into Vault config, beacuse mypythonapp1 need Vault connection for start:
 ```text
 $ vault write auth/kubernetes/role/kubereadonlyrole bound_service_account_names='mypythonappsa,kube1' bound_service_account_namespaces='*' policies=kubepolicy ttl=96h token_max_ttl=144h
