@@ -13,7 +13,7 @@ env:
 #  DOCKER_CONTENT_TRUST_ROOT_PASSPHRASE: ${{ secrets.TRUSTROOTPWD }} not needed beacuse repo is already manually initialized
   APP: 'mypythonapp1'
   DOCKERHUB: 'jrcjoro1'
-  CHART_VER: '0.0.4'
+  CHART_VER: '0.0.5'
   REGISTRY: 'registry-1.docker.io'
 
 jobs:
